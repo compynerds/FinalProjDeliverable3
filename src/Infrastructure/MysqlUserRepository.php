@@ -194,7 +194,7 @@ class MysqlUserRepository implements UserRepository
      */
     public function save()
     {
-        // TODO: Implement save() method
+        return true;
     }
 
     /**

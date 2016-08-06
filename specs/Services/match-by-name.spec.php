@@ -12,13 +12,14 @@
  * $LastChangedDate$
  * $LastChangedBy$
  */
+
 use Project1\Domain\StringLiteral;
 use Project1\Infrastructure\InMemoryUserRepository;
 use Project1\Domain\User;
 use Project1\Services\MatchByEmail;
 
 
-describe('Project1\Services\match-by-email', function () {
+describe('Project1\Services\MatchByName', function () {
     beforeEach(function () {
         $this->repo = new InMemoryUserRepository();
         $user = new User(
@@ -31,7 +32,7 @@ describe('Project1\Services\match-by-email', function () {
     });//End before each setup
 
     describe('->__construct()', function () {
-        it('should return a MatchByEmail object', function () {
+        it('should return a MatchByName object', function () {
             $repo = new InMemoryUserRepository();
             $user = new User(
                 new StringLiteral('bill@email.com'),
@@ -42,13 +43,13 @@ describe('Project1\Services\match-by-email', function () {
             $repo->add($user);
             $matchTest = new MatchByEmail($repo);
             expect($matchTest)->to->be->instanceof(
-                'Project1\Services\MatchByEmail'
+                'Project1\Services\MatchByName'
             );
         });
     });//End construct Unit test
 
     describe('->match(StringLiteral value)', function(){
-        it('should return the email bill@email.com', function()
+        it('should return the name', function()
         {
             $repo = new InMemoryUserRepository();
             $user = new User(
@@ -60,12 +61,9 @@ describe('Project1\Services\match-by-email', function () {
             $repo->add($user);
             $matchTest = new MatchByEmail($repo);
 
-            expect($matchTest->match(new StringLiteral('bill@email.com')))->equal($user);//InMemory should return the user not just the email
+            expect($matchTest->match(new StringLiteral('bill')))->equal($user);//InMemory should return the user not just the email
         });
     });//End match function unit test
 
-
-
-
-
 });//end initial describe/function block
+

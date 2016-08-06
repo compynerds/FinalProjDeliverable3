@@ -26,6 +26,7 @@ use Project1\Domain\UserRepository;
  * @category  PHP
  * @package   Project1\Infrastructure
  * @author    Don B. Stringham <stringhamdb@ldschurch.org>
+ * @modifier  Mark Richardson 8/5/2016
  * @link      http://donbstringham.us
  */
 class RedisUserRepository implements UserRepository
