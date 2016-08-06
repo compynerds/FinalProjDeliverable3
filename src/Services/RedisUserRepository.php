@@ -71,7 +71,6 @@ class RedisUserRepository implements UserRepository
         return $this->client->keys("*");
         //this is wrong I need to redo this
 
-
     }
 
     /**
