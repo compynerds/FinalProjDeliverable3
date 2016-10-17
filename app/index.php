@@ -4,12 +4,11 @@
  * Project: project1
  * PHP version 5
  * @category  PHP
- * @author    donbstringham <donbstringham@gmail.com>
+ * @author    mark Richardson <compynerds@gmail.com>
  * @modifier  Mark Richardson 8/6/2016
  * @copyright 2016 © donbstringham
  * @license   http://opensource.org/licenses/MIT MIT
  * @version   GIT: <git_id>
- * @link      http://donbstringham.us
  * $LastChangedDate$ 8/6/2016
  * $LastChangedBy$   Mark Richardson
  */
@@ -17,10 +16,10 @@
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Pimple\Container;
-use Project1\Infrastructure\InMemoryUserRepository;
-use Project1\Infrastructure\MysqlUserRepository;
-use Project1\Domain\StringLiteral;
-use Project1\Domain\User;
+use cs3360\src\Infrastructure\InMemoryUserRepository;
+use cs3360\src\Infrastructure\MysqlUserRepository;
+use cs3360\src\Domain\StringLiteral;
+use cs3360\src\Domain\User;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -28,24 +27,24 @@ $dic = bootstrap();
 
 $app = $dic['app'];
 
-$app->before(function (Request $request) {
-    $password = $request->getPassword();
-    $username = $request->getUser();
-
-    if ($username !== 'professor') {
-        $response = new Response();
-        $response->setStatusCode(401);
-
-        return $response;
-    }
-
-    if ($password !== '1234pass') {
-        $response = new Response();
-        $response->setStatusCode(401);
-
-        return $response;
-    }
-});
+//$app->before(function (Request $request) {
+//    $password = $request->getPassword();
+//    $username = $request->getUser();
+//
+//    if ($username !== 'professor') {
+//        $response = new Response();
+//        $response->setStatusCode(401);
+//
+//        return $response;
+//    }
+//
+//    if ($password !== '1234pass') {
+//        $response = new Response();
+//        $response->setStatusCode(401);
+//
+//        return $response;
+//    }
+//});
 
 $app->get('/', function () {
     return '<h1>Welcome to the Final Project</h1>';
@@ -64,7 +63,7 @@ $app->get('/ping', function() use ($dic) {
     }
 
     $repo = $dic['repo-mysql'];
-    if (!$repo instanceof \Project1\Domain\UserRepository) {
+    if (!$repo instanceof \cs3360\src\Domain\UserRepository) {
         $response->setStatusCode(500);
         $msg = ['msg' => 'repository problem'];
         $response->setContent(json_encode($msg));
@@ -80,24 +79,33 @@ $app->get('/ping', function() use ($dic) {
 
 });
 
-$app->get('/users', function () use ($dic) {
+$app->get('/login', function() use ($dic){
     $response = new Response();
-    $repo = $dic['repo-mem'];
     $response->setStatusCode(200);
-    $response->setContent(json_encode($repo->findAll()));
+    $response->setContent("<h1>This will be the login page</h1>");
+    return $response;
+});
+
+$app->get('/volunteers', function () use ($dic) {
+    $response = new Response();
+//    $repo = $dic['repo-mem'];
+    $response->setStatusCode(200);
+//    $response->setContent(json_encode($repo->findAll()));
 
     return $response;
 });
 
-$app->get('/users/{id}', function ($id) use ($dic) {
-    $response = new Response();
-    $repo = $dic['repo-mem'];
-    $user = $repo->findById(new StringLiteral($id));
-    if ($user === null) {
-        $response->setStatusCode(404);
 
-        return $response;
-    }
+
+$app->get('/volunteers/{id}', function ($id) use ($dic) {
+    $response = new Response();
+//    $repo = $dic['repo-mem'];
+//    $user = $repo->findById(new StringLiteral($id));
+//    if ($user === null) {
+//        $response->setStatusCode(404);
+//
+//        return $response;
+//    }
 
     $response->setStatusCode(200);
     $response->setContent(json_encode($user));
@@ -105,21 +113,7 @@ $app->get('/users/{id}', function ($id) use ($dic) {
     return $response;
 });
 
-$app->delete('/users/{id}', function ($id) use ($dic) {
-    $response = new Response();
-    $repo = $dic['repo-mem'];
-    $result = $repo->delete(new StringLiteral($id))->save();
-
-    if ($result === false) {
-        $response->setStatusCode(500);
-    } else {
-        $response->setStatusCode(200);
-    }
-
-    return $response;
-});
-
-$app->post('/users', function (Request $request) use ($dic) {
+$app->post('/volunteers', function (Request $request) use ($dic) {
     $content = $request->getContent();
 
     if($content === '')
@@ -131,15 +125,25 @@ $app->post('/users', function (Request $request) use ($dic) {
     else if($content != '')
     {
         $jsonArray = json_decode($content);
-        $name = $jsonArray['name'];
         $email = $jsonArray['email'];
-        $username = $jsonArray['username'];
-        $user = new user(new StringLiteral($email), new StringLiteral($name),new StringLiteral($username));
+        $firstname = $jsonArray['firstname'];
+        $lastname = $jsonArray['lastname'];
+        $organization = $jsonArray['organization'];
+        $groupnumber = $jsonArray['groupnumber'];
+        $datetime = $jsonArray['datetime'];
+        $department = $jsonArray['department'];
+
+        $user = new user(new StringLiteral($email), new StringLiteral($firstname),new StringLiteral($lastname),
+            new StringLiteral($organization),
+            new StringLiteral($groupnumber),
+            new DateTime($datetime),
+            new StringLiteral($department));
+
         $dic['redis-client']->add($user);
         $dic['db-driver']->add($user);
 
         $response = new Response();
-        $response->setStatusCode(200);
+        $response->setStatusCode(201);
         return $response;
     }
 
@@ -149,7 +153,8 @@ $app->post('/users', function (Request $request) use ($dic) {
     return $response;
 });
 
-$app->put('/users/{id}', function ($id, Request $request) use ($dic) {
+//TODO: not sure we need to have an update function for this application
+$app->put('/volunteers/{id}', function ($id, Request $request) use ($dic) {
     $response = new Response();
     $response->setStatusCode(501);
 
@@ -168,10 +173,10 @@ function bootstrap()
     };
 
     $dic['db-driver'] = function() {
-        $host = 'mysqlserver';
-        $db   = 'dockerfordevs';
+        $host = 'localhost';
+        $db   = 'RoadHome';
         $user = 'root';
-        $pass = 'docker';
+        $pass = 'one';
         $charset = 'utf8';
 
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -200,21 +205,33 @@ function bootstrap()
         $bill = new User(
             new StringLiteral('bill@email.com'),
             new StringLiteral('harris'),
-            new StringLiteral('bharris')
+            new StringLiteral('bharris'),
+            new StringLiteral('blah'),
+            new StringLiteral('blah'),
+            new DateTime(),
+            new StringLiteral('blah')
         );
         $bill->setId(new StringLiteral('1'));
 
         $charlie = new User(
             new StringLiteral('charlie@email.com'),
             new StringLiteral('fuller'),
-            new StringLiteral('cfuller')
+            new StringLiteral('cfuller'),
+            new StringLiteral('blah'),
+            new StringLiteral('blah'),
+            new DateTime(),
+            new StringLiteral('blah')
         );
         $charlie->setId(new StringLiteral('2'));
 
         $dawn = new User(
             new StringLiteral('dawn@email.com'),
             new StringLiteral('brown'),
-            new StringLiteral('dbrown')
+            new StringLiteral('dbrown'),
+            new StringLiteral('blah'),
+            new StringLiteral('blah'),
+            new DateTime(),
+            new StringLiteral('blah')
         );
         $dawn->setId(new StringLiteral('3'));
 
